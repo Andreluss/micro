@@ -1,0 +1,39 @@
+# Reference 
+[file:///opt/arm/stm32/doc/RM0383_rev2.pdf]
+[file:///opt/arm/stm32/doc/STM32F411xC_411xE_data_rev7.pdf]
+
+-- Jak uruchomić -----
+scp $STUDENTS:~/dev/micro/reference/sa1/leds.bin .
+sudo ./qfn4
+sudo minicom
+----------------------
+
+# Project 
+- jak przetestowac, czy dobrze podpiety
+- gdzie szukac informacji o zlaczach na plytce CN10
+- ", ustawiając bit SWSTART" - tego nie robimy? 
+- kodowanie ze znakiem?? 
+
+## Plan 
+- podpiecie kabelkow
+    - VDD <-> AVDD (pin 8 CN10)
+    - OUT <-> wejscie ADC
+    - GND <-> AGND (pin 32 CN10)
+- uruchomic UART na 115200 b/s BRR + minicom
+- zwieksz clock CPU [ na ile? do 100Mhz ]
+- odczytywanie sygnalu z ukladu:
+    - ustaw ADC: 
+        - rozdzielczosc 12 bitow 
+        - ustaw wejscia - 1 wejscie, kanal 14, zlacze PC4 [ jak to ustawic, czy PC4 to GPIOC pin 4?] 
+        - ustaw # pomiarow = 1
+        - wlacz przetwornik ADC1->CR2 |= ADON
+        - przetwarzanie ADC: 
+            - start <- trigger licznikiem o czest. z PWM 8kHz narastajacy albo opadajace zbocze wyzw pomiar 
+                       [ jak ustawic te liczniki - TIM2 + ustawic w ADC1 wyzwalania z zewnatrz]
+                        `Dla liczników TIM2 do TIM5 NVIC dostarcza przerwania o numerach TIMx IRQn, gdzie x = 2, 3, 4, 5`
+            - koniec -> trigeruje przerwanie `void ADC_IRQHandler() { if (ADC1->SR & ADC_SR_EOC) ADC1->D1 ... `
+- przesylanie odczytanego 0...4095 sygnalu przez UART na komputer:
+    - w obsłudze przerwania ADC push do wewnetrznej kolejki
+    - przerwania mozliwosci zapisu od DMA/UART wyciagaja elementy z kolejki i przesylaja na komputer
+- kodowanie A-law na komputerze i zapis do pliku 
+- zapisywanie sygnalu w raw
