@@ -3,7 +3,7 @@
 [file:///opt/arm/stm32/doc/STM32F411xC_411xE_data_rev7.pdf]
 
 -- Jak uruchomić -----
-scp $STUDENTS:~/dev/micro/reference/sa1/leds.bin .
+scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin
 sudo ./qfn4
 sudo minicom
 ----------------------
