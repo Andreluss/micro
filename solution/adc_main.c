@@ -3,7 +3,7 @@
 #include "usart.h"
 #include "timer.h"
 #include "user_button.h"
-#include "led.h";
+#include "led.h"
 
 static void on_adc_conversion_complete() {
     // Odczytaj wynik konwersji
