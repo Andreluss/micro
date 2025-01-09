@@ -17,7 +17,12 @@ LDFLAGS = $(FLAGS) -Wl,--gc-sections -nostartfiles \
 
 vpath %.c /opt/arm/stm32/src
 
-OBJECTS = adc_main.o startup_stm32.o delay.o gpio.o
+SOURCES = $(wildcard *.c)
+# print_sources:
+# 	@echo $(SOURCES)
+OBJECTS = startup_stm32.o delay.o gpio.o $(SOURCES:.c=.o)
+# print_objects:
+# 	@echo $(OBJECTS)
 
 TARGET = adc
 
