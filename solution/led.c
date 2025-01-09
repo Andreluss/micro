@@ -18,7 +18,7 @@ void led_green_init(void)
     led_common_init();
 
     GreenLEDoff();
-    
+
     GPIOoutConfigure(GREEN_LED_GPIO,
         GREEN_LED_PIN,
         GPIO_OType_PP,
@@ -29,4 +29,9 @@ void led_green_init(void)
 void led_green_on(void)
 {
     GreenLEDon();
+}
+
+void led_green_off(void)
+{
+    GreenLEDoff();
 }

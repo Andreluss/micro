@@ -18,6 +18,7 @@ static void on_timer_tick() {
 
 static void on_user_button_pressed() {
     // ...
+    led_green_off();
     usart_send_string("User button pressed!\n");
     adc_trigger_conversion(on_adc_conversion_complete);
 }

@@ -3,9 +3,9 @@
 [file:///opt/arm/stm32/doc/STM32F411xC_411xE_data_rev7.pdf]
 
 -- Jak uruchomić (ofc po `make` na studentsie) -----
-scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin
-sudo ./qfn4
-sudo minicom
+scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin \
+&& sudo ./qfn4 \
+&& sudo minicom
 ----------------------
 
 # Project 
