@@ -1,6 +1,6 @@
 #include "adc.h"
 
-static void (*on_adc_conversion_complete)();
+static void (*on_adc_conversion_complete)(uint16_t);
 
 #define ADC_GPIO GPIOC
 #define ADC_PIN 4
@@ -43,10 +43,21 @@ void adc_init()
     ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
 }
 
-void adc_trigger_conversion(void (*on_adc_conversion_complete_)())
+void adc_trigger_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
 {
-    // Włącz konwersję
+    on_adc_conversion_complete = on_adc_conversion_complete_;
+
+    // Start the conversion
     ADC1->CR2 |= ADC_CR2_SWSTART;
 
-    on_adc_conversion_complete = on_adc_conversion_complete_;
+    // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
+    while (!(ADC1->SR & ADC_SR_EOC)) {}
+
+    // Read the converted data
+    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
+
+    // Callback
+    if (on_adc_conversion_complete) {
+        on_adc_conversion_complete(result);
+    }
 }

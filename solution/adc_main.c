@@ -8,7 +8,7 @@
 static void blocking_print(const char *str);
 __attribute__((unused)) static void blocking_print_int(int i);
 
-static void on_adc_conversion_complete() {
+static void on_adc_conversion_complete(uint16_t result) {
     // Odczytaj wynik konwersji
     // uint16_t result = ADC1->DR;
     // Przetwórz wynik konwersji
