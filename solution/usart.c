@@ -1,9 +1,6 @@
 #include "usart.h"
 #include "buffer.h"
 
-#define HSI_HZ 16000000U // TODO
-#define PCLK1_HZ HSI_HZ
-
 static int dma_bout_bytes_to_send = 0;
 static Buffer dma_bout;
 
