@@ -5,6 +5,9 @@
 #include "user_button.h"
 #include "led.h"
 
+static void blocking_print(const char *str);
+__attribute__((unused)) static void blocking_print_int(int i);
+
 static void on_adc_conversion_complete() {
     // Odczytaj wynik konwersji
     // uint16_t result = ADC1->DR;
@@ -19,7 +22,9 @@ static void on_timer_tick() {
 static void on_user_button_pressed() {
     // ...
     led_green_off();
-    usart_send_string("User button pressed!\n");
+    if (usart_send_string("User button pressed!\n\r")) {
+        led_green_on();
+    }
     adc_trigger_conversion(on_adc_conversion_complete);
 }
 
@@ -47,17 +52,10 @@ static void init_dev(void) {
     user_button_init(on_user_button_pressed);
 }
 
-static void blocking_print(const char *str);
-static void blocking_print_int(int i);
-
 int main() {
     init_dev();
 
-    for (int i = 0; true; i++) {
-        blocking_print("Iteration: ");
-        blocking_print_int(i);
-        blocking_print("\n\r");
-    }
+    blocking_print("Hello, world!\n\r");
     
     led_green_init();
     led_green_on();
