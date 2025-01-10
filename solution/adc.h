@@ -1,3 +1,4 @@
+#pragma once
 #include "common.h"
 
 void adc_init(int channel);

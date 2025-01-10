@@ -1,3 +1,4 @@
+#pragma once
 #include <delay.h>
 #include <gpio.h>
 #include <stm32.h>

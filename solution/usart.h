@@ -1,3 +1,4 @@
+#pragma once
 #include "common.h"
 
 void usart_init(int baudrate);
