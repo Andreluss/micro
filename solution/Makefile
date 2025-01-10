@@ -10,7 +10,8 @@ CFLAGS = $(FLAGS) -Wall -g \
     -O2 -ffunction-sections -fdata-sections \
     -I/opt/arm/stm32/inc \
     -I/opt/arm/stm32/CMSIS/Include \
-    -I/opt/arm/stm32/CMSIS/Device/ST/STM32F4xx/Include
+    -I/opt/arm/stm32/CMSIS/Device/ST/STM32F4xx/Include \
+    -MMD -MP # for geberating dependencies (.d)
 
 LDFLAGS = $(FLAGS) -Wl,--gc-sections -nostartfiles \
     -L/opt/arm/stm32/lds -Tstm32f411re.lds
@@ -18,11 +19,8 @@ LDFLAGS = $(FLAGS) -Wl,--gc-sections -nostartfiles \
 vpath %.c /opt/arm/stm32/src
 
 SOURCES = $(wildcard *.c)
-# print_sources:
-# 	@echo $(SOURCES)
 OBJECTS = startup_stm32.o delay.o gpio.o $(SOURCES:.c=.o)
-# print_objects:
-# 	@echo $(OBJECTS)
+DEPS = $(OBJECTS:.o=.d)
 
 TARGET = adc
 
@@ -38,3 +36,5 @@ all: $(TARGET).bin
 
 clean:
 	rm -f *.bin *.elf *.hex *.d *.o *.bak *~
+
+-include $(DEPS)
