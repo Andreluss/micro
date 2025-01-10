@@ -27,8 +27,16 @@ void adc_init(void)
     // 12bit 
     // ADC1->CR1 &= ~ADC_CR1_RES;
 
-    // Set the sample time (n.o. cycles) for channel ADC_CHANNEL
-    // ADC1->SMPR1 &= ~(ADC_SMPR1_SMP14_0 | ADC_SMPR1_SMP14_2); 
+    // Set the sampling time (n.o. cycles) for channel ADC_CHANNEL
+    // Highest sampling time for the most accurate conversion...
+    // 000 for 3 cpu cycles
+    // 100 for 84 cpu cycles
+    ADC1->SMPR1 &= ~ADC_SMPR1_SMP14; // (clears the SMP14 bits)
+    ADC1->SMPR1 |= 0b100 << ADC_SMPR1_SMP14_Pos;
+    // ADC1->SMPR1 &= ~ADC_SMPR1_SMP14; // (clears the SMP14 bits)
+    // 111 for 480 cpu cycles
+    // ADC1->SMPR1 |= 0b111 << ADC_SMPR1_SMP14_Pos;
+
     // Set the number of conversions to 1
     ADC1->SQR1 &= ~ADC_SQR1_L; // 0000 for 1 conversion
     // Set the 1st conversion channel n.o. to ADC_CHANNEL
