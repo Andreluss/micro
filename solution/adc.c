@@ -19,8 +19,14 @@ void adc_init(void)
     GPIOainConfigure(GPIOC, ADC_PIN);
 
     // Configure the ADC
+    
     // Set the resolution to 12 bits
-    ADC1->CR1 &= ~ADC_CR1_RES;
+    // 8bit
+    ADC1->CR1 |= ADC_CR1_RES_1;
+    ADC1->CR1 &= ~ADC_CR1_RES_0;
+    // 12bit 
+    // ADC1->CR1 &= ~ADC_CR1_RES;
+
     // Set the sample time (n.o. cycles) for channel ADC_CHANNEL
     // ADC1->SMPR1 &= ~(ADC_SMPR1_SMP14_0 | ADC_SMPR1_SMP14_2); 
     // Set the number of conversions to 1
