@@ -7,12 +7,23 @@
 
 static void blocking_print(const char *str);
 __attribute__((unused)) static void blocking_print_int(int i);
+static int int_to_string(int n, char *str, int len);
 
 static void on_adc_conversion_complete(uint16_t result) {
     // Odczytaj wynik konwersji
     // uint16_t result = ADC1->DR;
     // Przetwórz wynik konwersji
     // ...
+    led_green_on();
+    char buff[16];
+    if (int_to_string(result, buff, 16) == 0) {
+        usart_send_string("ADC result: ");
+        usart_send_string(buff);
+        usart_send_string("\n\r");
+    }
+    else {
+        usart_send_string("ADC-RES-ERR\n\r");
+    }
 }
 
 static void on_timer_tick() {
@@ -22,9 +33,7 @@ static void on_timer_tick() {
 static void on_user_button_pressed() {
     // ...
     led_green_off();
-    if (usart_send_string("User button pressed!\n\r")) {
-        led_green_on();
-    }
+    usart_send_string("Starting conversion!\n\r");
     adc_trigger_conversion(on_adc_conversion_complete);
 }
 
@@ -38,8 +47,7 @@ __attribute__((unused)) static void init(void) {
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA
 
-    const int adc_channel = 14; // idk why
-    adc_init(adc_channel);
+    adc_init();
 
     const int sampling_frequency_hz = 8000;
     timer_init(sampling_frequency_hz, on_timer_tick);
@@ -50,6 +58,8 @@ static void init_dev(void) {
     usart_init(usart_baudrate); // USART will use DMA
 
     user_button_init(on_user_button_pressed);
+
+    adc_init();
 }
 
 int main() {
@@ -86,4 +96,33 @@ void blocking_print_int(int i) {
         }
     }
     blocking_print(buff + pos + 1);
+}
+
+int int_to_string(int n, char *buff, int len) {
+    buff[len - 1] = 0;
+    int pos = len - 2;
+    if (n == 0) {
+        buff[pos--] = '0';
+    } else {
+        while (n && pos >= 0) {
+            buff[pos--] = '0' + (n % 10);
+            n /= 10;
+        }
+    }
+
+    if (n != 0) {
+        return -1;
+    }
+
+    // shift the string to the beginning
+    int shift = pos + 1;
+    for (int i = 0; i < len; i++) {
+        if (i + shift < len) {
+            buff[i] = buff[i + shift];
+        } else {
+            buff[i] = 0;
+        }
+    }
+
+    return 0;
 }

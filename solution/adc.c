@@ -6,17 +6,17 @@ static void (*on_adc_conversion_complete)(uint16_t);
 #define ADC_PIN 4
 #define ADC_CHANNEL 14
 
-void adc_init()
+void adc_init(void)
 {
     // Microphone is connected to PC4 (GPIOC pin 4)
     // It has additional functionality as ADC channel 14 (STM32 datasheet)
 
     // Enable GPIOC (the same GPIO as for the user/action buttons)
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
     // Enable ADC1 clock
     RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
     // Configure GPIO pin 4 as an analog input
-    GPIOainConfigure(GPIOC, 4);
+    GPIOainConfigure(GPIOC, ADC_PIN);
 
     // Configure the ADC
     // Set the resolution to 12 bits

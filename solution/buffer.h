@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define BUFF_SIZE 10
+#define BUFF_SIZE 4096
 typedef struct Buffer {
     char buff[BUFF_SIZE];
     int count;
