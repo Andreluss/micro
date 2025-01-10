@@ -47,13 +47,45 @@ static void init_dev(void) {
     user_button_init(on_user_button_pressed);
 }
 
+static void blocking_print(const char *str);
+static void blocking_print_int(int i);
+
 int main() {
     init_dev();
 
+    for (int i = 0; true; i++) {
+        blocking_print("Iteration: ");
+        blocking_print_int(i);
+        blocking_print("\n\r");
+    }
+    
     led_green_init();
     led_green_on();
 
     while (true) {
         __NOP();
     }
+}
+
+void blocking_print(const char *str) {
+    while (*str) {
+        while (!(USART2->SR & USART_SR_TXE));
+        USART2->DR = *str;
+        str++;
+    }
+}
+
+void blocking_print_int(int i) {
+    char buff[16];
+    buff[15] = 0;
+    int pos = 14;
+    if (i == 0) {
+        buff[pos--] = '0';
+    } else {
+        while (i) {
+            buff[pos--] = '0' + (i % 10);
+            i /= 10;
+        }
+    }
+    blocking_print(buff + pos + 1);
 }

@@ -6,7 +6,13 @@
 scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin \
 && sudo ./qfn4 \
 && sudo minicom
+
+scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin \
+&& sudo ./qfn4
 ----------------------
+
+---- minicom config ---- 
+sudo nano /etc/minicom/minirc.dfl
 
 # Project 
 - jak przetestowac, czy dobrze podpiety
