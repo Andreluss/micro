@@ -14,6 +14,33 @@ scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin \
 ---- minicom config ---- 
 sudo nano /etc/minicom/minirc.dfl
 
+---- clocks --------
+set f sysclk to f_pll_out
+
+tim is clocked by pclk
+
+TIM2 (f_CK_TIM2) <---> APB1 <----> f_PCLK1 (*2 gdy PPRE1 > 1)
+
+f_PCLK1 = 16Mhz on startup
+
+f_CK_CNTx = f_CK_TIMx / (TIMx->PSC + 1) 
+
+
+----- setup 100mhz cpu ----
+Ustawiamy fSYSCLK = fPLL OUT
+reg = RCC->CFGR;
+reg &= ~RCC_CFGR_SW;
+reg |= RCC_CFGR_SW_PLL;
+RCC->CFGR = reg;
+I To chwilę trwa, czekamy na spełnienie warunku
+(RCC->CFGR & RCC_CFGR_SWS) == RCC_CFGR_SWS_PLL
+I Ale oczywiście nie czekamy w nieskończoność... 
+w4_clocks.pdf / 23
+
+
+----------------------------
+
+
 # Project 
 - jak przetestowac, czy dobrze podpiety
 - gdzie szukac informacji o zlaczach na plytce CN10
