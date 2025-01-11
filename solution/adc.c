@@ -1,13 +1,15 @@
 #include "adc.h"
 
-static void (*on_adc_conversion_complete)(uint16_t);
+static void (*on_adc_conversion_complete)(uint16_t) = 0;
+static bool trigger_eoc_interrupt = false;
 
 #define ADC_GPIO GPIOC
 #define ADC_PIN 4
 #define ADC_CHANNEL 14
 
-void adc_init(void)
+void adc_init(bool trigger_eoc_interrupt_)
 {
+    trigger_eoc_interrupt = trigger_eoc_interrupt_;
     // Microphone is connected to PC4 (GPIOC pin 4)
     // It has additional functionality as ADC channel 14 (STM32 datasheet)
 
@@ -26,6 +28,12 @@ void adc_init(void)
     ADC1->CR1 &= ~ADC_CR1_RES_0;
     // 12bit 
     // ADC1->CR1 &= ~ADC_CR1_RES;
+
+    if (trigger_eoc_interrupt) {
+        // Enable the End of Conversion interrupt
+        ADC1->CR1 |= ADC_CR1_EOCIE;
+        NVIC_EnableIRQ(ADC_IRQn);
+    }
 
     // Set the sampling time (n.o. cycles) for channel ADC_CHANNEL
     // Highest sampling time for the most accurate conversion...
@@ -57,6 +65,16 @@ void adc_init(void)
     ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
 }
 
+static void adc_result_callback(void) {
+    // Read the converted data
+    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
+
+    // Callback
+    if (on_adc_conversion_complete) {
+        on_adc_conversion_complete(result);
+    }
+}
+
 void adc_trigger_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
 {
     on_adc_conversion_complete = on_adc_conversion_complete_;
@@ -64,14 +82,17 @@ void adc_trigger_conversion(void (*on_adc_conversion_complete_)(uint16_t result)
     // Start the conversion
     ADC1->CR2 |= ADC_CR2_SWSTART;
 
-    // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
-    while (!(ADC1->SR & ADC_SR_EOC)) {}
+    if (!trigger_eoc_interrupt) {
+        // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
+        while (!(ADC1->SR & ADC_SR_EOC)) {}
 
-    // Read the converted data
-    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
+        adc_result_callback();
+    }
+}
 
-    // Callback
-    if (on_adc_conversion_complete) {
-        on_adc_conversion_complete(result);
+void ADC_IRQHandler(void)
+{
+    if (ADC1->SR & ADC_SR_EOC) {
+        adc_result_callback();
     }
 }
