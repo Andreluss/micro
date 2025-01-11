@@ -54,7 +54,16 @@ __attribute__((unused)) static void init(void) {
 }
 
 static void on_dev_timer_tick() {
-    
+    blocking_print("WTF!\n\r");
+    // static int counter = 0;
+    // counter++;
+    // if (counter > 0) {
+    //     led_green_off();
+    // }
+    // if (counter % 16000 == 0) {
+    //     led_green_on();
+    // }
+    // blocking_print("Timer tick\n\r");
 }
 
 static void init_dev(void) {
@@ -63,18 +72,18 @@ static void init_dev(void) {
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA
 
-    user_button_init(on_user_button_pressed);
+    // user_button_init(on_user_button_pressed);
 
-    adc_init(true);
+    // adc_init(true);
 }
 
 int main() {
+    led_green_init();
+    led_green_on();
     init_dev();
 
     blocking_print("Hello, world!\n\r");
     
-    led_green_init();
-    led_green_on();
 
     while (true) {
         __NOP();
