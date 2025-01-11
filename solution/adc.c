@@ -1,15 +1,74 @@
 #include "adc.h"
 
-static void (*on_adc_conversion_complete)(uint16_t) = 0;
+static void (*on_adc_conversion_complete)(uint16_t) = NULL;
 static bool trigger_eoc_interrupt = false;
 
 #define ADC_GPIO GPIOC
 #define ADC_PIN 4
 #define ADC_CHANNEL 14
 
+static void adc_result_callback(void);
+static void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result));
+
 void adc_init(bool trigger_eoc_interrupt_)
 {
+    adc_init_common(trigger_eoc_interrupt_, NULL);
+
+    // Enable the ADC
+    ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
+}
+
+void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uint16_t result)) {
+    adc_init_common(true, on_adc_conversion_complete_);
+
+    // Set the external trigger to TIM2 
+    ADC1->CR2 &= ~ADC_CR2_EXTSEL_Msk;
+    ADC1->CR2 |= ADC_CR2_EXTSEL_1 | ADC_CR2_EXTSEL_2; // EXTSEL: 0110 -> TIM2_TRGO
+    // Set the external trigger polarity to rising edge
+    ADC1->CR2 &= ~ADC_CR2_EXTEN_Msk;
+    ADC1->CR2 |= ADC_CR2_EXTEN_0; // EXTEN: 01 -> rising edge 
+    // TODO: check, maybe falling should be (also) used
+
+    // Enable the ADC
+    ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
+}
+
+void adc_trigger_single_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
+{
+    on_adc_conversion_complete = on_adc_conversion_complete_;
+
+    // Start the conversion
+    ADC1->CR2 |= ADC_CR2_SWSTART;
+
+    if (!trigger_eoc_interrupt) {
+        // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
+        while (!(ADC1->SR & ADC_SR_EOC)) {}
+
+        adc_result_callback();
+    }
+}
+
+void ADC_IRQHandler(void)
+{
+    if (ADC1->SR & ADC_SR_EOC) {
+        adc_result_callback();
+    }
+}
+
+static void adc_result_callback(void) {
+    // Read the converted data
+    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
+
+    // Callback
+    if (on_adc_conversion_complete) {
+        on_adc_conversion_complete(result);
+    }
+}
+
+void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result))
+{
     trigger_eoc_interrupt = trigger_eoc_interrupt_;
+    on_adc_conversion_complete = on_adc_conversion_complete_;
     // Microphone is connected to PC4 (GPIOC pin 4)
     // It has additional functionality as ADC channel 14 (STM32 datasheet)
 
@@ -60,39 +119,4 @@ void adc_init(bool trigger_eoc_interrupt_)
     // ADC1->SQR1 = ...; // i.a. no. of conversions
     // ADC1->SQR2 = 0; // result ALIGN
     // ADC1->SQR3 = 4U; /* on channel 4 */
-
-    // Enable the ADC
-    ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
-}
-
-static void adc_result_callback(void) {
-    // Read the converted data
-    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
-
-    // Callback
-    if (on_adc_conversion_complete) {
-        on_adc_conversion_complete(result);
-    }
-}
-
-void adc_trigger_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
-{
-    on_adc_conversion_complete = on_adc_conversion_complete_;
-
-    // Start the conversion
-    ADC1->CR2 |= ADC_CR2_SWSTART;
-
-    if (!trigger_eoc_interrupt) {
-        // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
-        while (!(ADC1->SR & ADC_SR_EOC)) {}
-
-        adc_result_callback();
-    }
-}
-
-void ADC_IRQHandler(void)
-{
-    if (ADC1->SR & ADC_SR_EOC) {
-        adc_result_callback();
-    }
 }

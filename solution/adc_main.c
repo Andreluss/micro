@@ -34,7 +34,7 @@ static void on_user_button_pressed() {
     // ...
     led_green_off();
     usart_send_string("Starting conversion!\n\r");
-    adc_trigger_conversion(on_adc_conversion_complete);
+    adc_trigger_single_conversion(on_adc_conversion_complete);
 }
 
 static void set_cpu_clock_100Mhz() {

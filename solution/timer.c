@@ -25,9 +25,40 @@ void timer_init(int frequency_hz, void (*on_timer_tick_)())
         TIM2->EGR = TIM_EGR_UG; // force update (because of URS this will only
                                 //        update but not generate an interrupt)
 
+        // ---- Configure the interrupt ----- 
         TIM2->SR = ~TIM_SR_UIF; // clear interrupt flag at intialization
         TIM2->DIER = TIM_DIER_UIE; // enable update interrupt
         NVIC_EnableIRQ(TIM2_IRQn);
+        // ----------------------------------
+
+        TIM3->CR1 |= TIM_CR1_CEN; // start the timer
+    }
+}
+
+void timer_init_with_pin_output_on_update_event(int frequency_hz) 
+{
+    if (frequency_hz == 8000) {
+        // enable TIM2 clock
+        RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+        TIM2->CR1 = TIM_CR1_URS; // count upwards, only overflow/underflow 
+                                 // generates an update interrupt
+
+        TIM2->PSC = 2000-1;
+        TIM2->ARR = 0;
+
+        TIM2->EGR = TIM_EGR_UG; // force update (because of URS this will only
+                                //        update but not generate an interrupt)
+
+        // ---- Configure the signal output ----- 
+        TIM2->CR2 &= ~TIM_CR2_MMS; // reset MMS bits
+        TIM2->CR2 |= TIM_CR2_MMS_1; // MMS=010 -> output update event on TRGO
+        // TIM2 will now generate a TRGO signal on each update event
+        // ----------------------------------------------
+
+        // TIM2->SR = ~TIM_SR_UIF; // clear interrupt flag at intialization
+        // TIM2->DIER = TIM_DIER_UIE; // enable update interrupt
+        // NVIC_EnableIRQ(TIM2_IRQn);
 
         TIM3->CR1 |= TIM_CR1_CEN; // start the timer
     }
