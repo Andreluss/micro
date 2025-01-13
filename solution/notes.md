@@ -40,6 +40,9 @@ w4_clocks.pdf / 23
 
 ----------------------------
 
+# Pytania: 
+
+
 
 # Project 
 - jak przetestowac, czy dobrze podpiety
