@@ -75,9 +75,9 @@ static void init_dev(void) {
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA
 
-    // user_button_init(on_user_button_pressed);
+    user_button_init(on_user_button_pressed);
 
-    // adc_init(true);
+    adc_init(true);
 }
 
 int main() {
