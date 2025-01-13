@@ -10,14 +10,10 @@ __attribute__((unused)) static void blocking_print_int(int i);
 static int int_to_string(int n, char *str, int len);
 
 static void on_adc_conversion_complete(uint16_t result) {
-    // Odczytaj wynik konwersji
-    // uint16_t result = ADC1->DR;
-    // Przetwórz wynik konwersji
-    // ...
-    led_green_on();
+    // led_green_on();
     char buff[16];
     if (int_to_string(result, buff, 16) == 0) {
-        usart_send_string("ADC result: ");
+        // usart_send_string("ADC result: ");
         usart_send_string(buff);
         usart_send_string("\n\r");
     }
@@ -53,7 +49,7 @@ __attribute__((unused)) static void init(void) {
     timer_init(2000-1, 1, on_timer_tick);
 }
 
-static void on_dev_timer_tick() {
+__attribute__((unused)) static void on_dev_timer_tick() {
     static int counter = 0;
     counter++;
     if (counter % 2 == 1) {
@@ -69,24 +65,30 @@ static void on_dev_timer_tick() {
 }
 
 static void init_dev(void) {
-    timer_init(2000-1, 8000-1, on_dev_timer_tick);
-
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA
 
     user_button_init(on_user_button_pressed);
 
-    adc_init(true);
+    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
+
+    int psc = 1000-1;
+    int arr = 8-1;
+    usart_send_string("\n\rSampling at ");
+    char num[16];
+    int_to_string(16000000 / (psc + 1) / (arr + 1), num, sizeof(num));
+    usart_send_string(num);
+    usart_send_string("Hz\n\r");
+
+    Delay(6400000);
+
+    timer_init_with_pin_output_on_update_event(psc, arr);
 }
 
 int main() {
     led_green_init();
     led_green_on();
     init_dev();
-    blocking_print("WTF!\n\r");
-
-    blocking_print("Hello, world!\n\r");
-    
 
     while (true) {
         __NOP();

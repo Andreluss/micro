@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "led.h"
 
 static int min(int a, int b) {
     return a < b ? a : b;
@@ -26,6 +27,9 @@ int Buffer_push_bytes(Buffer* b, const uint8_t* bytes, int length) {
     while ((LIMIT--) && i < length) {
         Buffer_push(b, bytes[i]);
         i++;
+    }
+    if (i != length) {
+        led_green_off();
     }
     return i != length; // 1 if not all bytes were pushed
 }
