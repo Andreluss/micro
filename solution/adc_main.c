@@ -56,21 +56,20 @@ __attribute__((unused)) static void init(void) {
 static void on_dev_timer_tick() {
     static int counter = 0;
     counter++;
-    if (counter % 16000 == 8000) {
+    if (counter % 2 == 1) {
         led_green_off();
-        blocking_print_int(counter / 8000);
+        blocking_print_int(counter);
         blocking_print("s\n\r");
     }
-    if (counter % 16000 == 0) {
+    if (counter % 2 == 0) {
         led_green_on();
-        blocking_print_int(counter / 8000);
+        blocking_print_int(counter);
         blocking_print("s\n\r");
     }
-    
 }
 
 static void init_dev(void) {
-    timer_init(2000-1, 3, on_dev_timer_tick);
+    timer_init(2000-1, 8000-1, on_dev_timer_tick);
 
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA

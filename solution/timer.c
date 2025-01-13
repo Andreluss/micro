@@ -5,7 +5,7 @@ static void (*timer_on_tick)(void);
 static void timer_clock_setup(int psc, int arr);
 static void timer_enable_interrupt(void);
 
-// Timer runs at 16MHz, the frequency will be 16_000_000 / (psc + 1) / (arr + 1) * 2
+// Timer runs at 16MHz, the frequency will be 16_000_000 / (psc + 1) / (arr + 1)
 void timer_init(int psc, int arr, void (*on_timer_tick_)())
 {
     timer_on_tick = on_timer_tick_;
@@ -27,16 +27,12 @@ void timer_init(int psc, int arr, void (*on_timer_tick_)())
 
 void TIM2_IRQHandler(void)
 {
-    if (timer_on_tick) {
-        timer_on_tick();
-    }
-
     uint32_t it_status = TIM2->SR; // & TIM2->DIER;
 
     if (it_status & TIM_SR_UIF) {
         // clear interrupt flag
         TIM2->SR &= ~TIM_SR_UIF; 
-        if (timer_on_tick) 
+        if (timer_on_tick)
             timer_on_tick();
     }
 }
