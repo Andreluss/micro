@@ -49,8 +49,8 @@ __attribute__((unused)) static void init(void) {
 
     adc_init(true);
 
-    const int sampling_frequency_hz = 8000;
-    timer_init(sampling_frequency_hz, on_timer_tick);
+    // 16_000_000 / (2000-1+1) / (1+1) * 2 = 8000Hz
+    timer_init(2000-1, 1, on_timer_tick);
 }
 
 static void on_dev_timer_tick() {
@@ -70,7 +70,7 @@ static void on_dev_timer_tick() {
 }
 
 static void init_dev(void) {
-    timer_init(8000, on_dev_timer_tick);
+    timer_init(2000-1, 3, on_dev_timer_tick);
 
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA

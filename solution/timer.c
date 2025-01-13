@@ -5,7 +5,8 @@ static void (*timer_on_tick)(void);
 static void timer_clock_setup(int psc, int arr);
 static void timer_enable_interrupt(void);
 
-void timer_init(int frequency_hz, void (*on_timer_tick_)())
+// Timer runs at 16MHz, the frequency will be 16_000_000 / (psc + 1) / (arr + 1) * 2
+void timer_init(int psc, int arr, void (*on_timer_tick_)())
 {
     timer_on_tick = on_timer_tick_;
 
@@ -14,17 +15,14 @@ void timer_init(int frequency_hz, void (*on_timer_tick_)())
     // - on startup clocked at f_PCLK1 = 16MHz (if PPRE1 = 1)
     // 16Mhz = 16_000_000Hz = 2000 * 8000Hz
 
-    // the only supported frequency is 8kHz
-    if (frequency_hz == 8000) {
-        // enable TIM2 clock
-        RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+    // enable TIM2 clock
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
-        timer_clock_setup(2000-1, 1);
+    timer_clock_setup(psc, arr);
 
-        timer_enable_interrupt();
+    timer_enable_interrupt();
 
-        TIM2->CR1 |= TIM_CR1_CEN; // start the timer
-    }
+    TIM2->CR1 |= TIM_CR1_CEN; // start the timer
 }
 
 void TIM2_IRQHandler(void)
@@ -43,24 +41,22 @@ void TIM2_IRQHandler(void)
     }
 }
 
-void timer_init_with_pin_output_on_update_event(int frequency_hz) 
+void timer_init_with_pin_output_on_update_event(int psc, int arr) 
 {
-    if (frequency_hz == 8000) {
-        // enable TIM2 clock
-        RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+    // enable TIM2 clock
+    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
 
-        timer_clock_setup(2000-1, 1);
+    timer_clock_setup(psc, arr);
 
-        // ---- Configure the signal output ----- 
-        TIM2->CR2 &= ~TIM_CR2_MMS; // reset MMS bits
-        TIM2->CR2 |= TIM_CR2_MMS_1; // MMS=010 -> output update event on TRGO
-        // TIM2 will now generate a TRGO signal on each update event
-        // ----------------------------------------------
+    // ---- Configure the signal output ----- 
+    TIM2->CR2 &= ~TIM_CR2_MMS; // reset MMS bits
+    TIM2->CR2 |= TIM_CR2_MMS_1; // MMS=010 -> output update event on TRGO
+    // TIM2 will now generate a TRGO signal on each update event
+    // ----------------------------------------------
 
-        // timer_enable_interrupt();
+    // timer_enable_interrupt();
 
-        TIM2->CR1 |= TIM_CR1_CEN; // start the timer
-    }
+    TIM2->CR1 |= TIM_CR1_CEN; // start the timer
 }
 
 static void timer_clock_setup(int psc, int arr) {
