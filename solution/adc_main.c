@@ -54,16 +54,19 @@ __attribute__((unused)) static void init(void) {
 }
 
 static void on_dev_timer_tick() {
-    blocking_print("WTF!\n\r");
-    // static int counter = 0;
-    // counter++;
-    // if (counter > 0) {
-    //     led_green_off();
-    // }
-    // if (counter % 16000 == 0) {
-    //     led_green_on();
-    // }
-    // blocking_print("Timer tick\n\r");
+    static int counter = 0;
+    counter++;
+    if (counter % 16000 == 8000) {
+        led_green_off();
+        blocking_print_int(counter / 8000);
+        blocking_print("s\n\r");
+    }
+    if (counter % 16000 == 0) {
+        led_green_on();
+        blocking_print_int(counter / 8000);
+        blocking_print("s\n\r");
+    }
+    
 }
 
 static void init_dev(void) {
@@ -81,6 +84,7 @@ int main() {
     led_green_init();
     led_green_on();
     init_dev();
+    blocking_print("WTF!\n\r");
 
     blocking_print("Hello, world!\n\r");
     
