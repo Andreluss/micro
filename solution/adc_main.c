@@ -215,20 +215,28 @@ __attribute__((unused)) static void init_dev(void) {
     const int usart_baudrate = 115200; // todo: update the baudrate in minicom config too
     usart_init(usart_baudrate); // USART will use DMA
     blocking_print("Hello, World!\n\r");
+
+    adc_init(true);
+
     user_button_init(on_user_button_pressed);
 
-    // adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
+    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
 
-    // int psc = 1000-1;
-    // int arr = 8-1;
-    // usart_send_string("\n\rSampling at ");
-    // char num[16];
-    // int_to_string(16000000 / (psc + 1) / (arr + 1), num, sizeof(num));
-    // usart_send_string(num);
-    // usart_send_string("Hz\n\r");
+    // now that 96MHz = SYSCLK  = HCLK -> 
+    // PCLK1 = 48MHz = HCLK / 2 (PRE > 1) 
+    // -> TIM2CLK = PCLK1 / 2 = 24MHz (instead of 16MHz)
+    int timer_clock = 96000000;
+    int psc = 48000-1;
+    int arr = 200-1;
+    usart_send_string("\n\rSampling at ");
+    char num[16];
+    int_to_string(timer_clock / (psc + 1) / (arr + 1), num, sizeof(num));
+    usart_send_string(num);
+    usart_send_string("Hz\n\r");
 
-    // Delay(6400000);
+    Delay(6400000);
 
+    timer_init(psc, arr, on_dev_timer_tick);
     // timer_init_with_pin_output_on_update_event(psc, arr);
 }
 
@@ -246,7 +254,7 @@ int main() {
     // } else {
     //     led_green_on();
     // }
-    // init_dev();
+    init_dev();
 
     while (true) {
         __NOP();

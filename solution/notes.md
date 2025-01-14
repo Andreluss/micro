@@ -40,6 +40,16 @@ w4_clocks.pdf / 23
 
 ----------------------------
 
+# Todo: 
+- refactor: 
+-- 96 mghz
+-- param 
+-- cleanup 
+-- unused f
+-- test
+-- leave hardcoded
+-- buffer signal change
+
 # Pytania: 
 
 

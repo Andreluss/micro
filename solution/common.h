@@ -7,4 +7,4 @@
 #include <string.h>
 
 #define HSI_HZ 16000000U // TODO
-#define PCLK1_HZ HSI_HZ
+#define PCLK1_HZ 48000000U
