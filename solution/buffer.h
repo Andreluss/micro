@@ -13,6 +13,7 @@ typedef struct Buffer {
 void Buffer_init(Buffer* b);
 void Buffer_clear(Buffer* b);
 bool Buffer_empty(Buffer* b);
+int Buffer_size(Buffer* b);
 void Buffer_push(Buffer* b, char c);
 int Buffer_push_bytes(Buffer* b, const uint8_t* bytes, int length);
 int Buffer_push_string(Buffer* b, const char* c);

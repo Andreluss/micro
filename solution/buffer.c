@@ -15,6 +15,9 @@ void Buffer_clear(Buffer* b) {
 bool Buffer_empty(Buffer* b) {
     return b->count == 0;
 }
+int Buffer_size(Buffer* b) {
+    return b->count;
+}
 void Buffer_push(Buffer* b, char c) {
     int pos = (int)(((long long)b->first + b->count) % BUFF_SIZE);
     b->buff[pos] = c;
