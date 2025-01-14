@@ -14,6 +14,15 @@ scp $STUDENTS:~/dev/micro/solution/adc.bin program.bin \
 ---- minicom config ---- 
 sudo nano /etc/minicom/minirc.dfl
 
+pu port		/dev/ttyACM0
+pu baudrate	115200
+pu bits		8
+pu parity	N
+pu stopbits	1
+pu rtscts	No
+pu minit
+pu mreset
+
 ---- clocks --------
 set f sysclk to f_pll_out
 

@@ -34,7 +34,7 @@ static void usart_dma_init(void) {
     Buffer_init(&dma_bout);
 }
 
-void usart_init(int baudrate/* , int pclk1_hz */)
+void usart_init(int baudrate, int pclk1_hz)
 {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_DMA1EN;
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -57,7 +57,7 @@ void usart_init(int baudrate/* , int pclk1_hz */)
                     GPIO_AF_USART2);
 
     USART2->CR1 = USART_CR1_RE | USART_CR1_TE;
-    USART2->BRR = (PCLK1_HZ + (baudrate / 2U)) / baudrate;
+    USART2->BRR = (pclk1_hz + (baudrate / 2U)) / baudrate;
 
     usart_dma_init();
 
