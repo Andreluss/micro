@@ -1,5 +1,6 @@
 #include "buffer.h"
 #include "led.h"
+#include <string.h>
 
 static int min(int a, int b) {
     return a < b ? a : b;

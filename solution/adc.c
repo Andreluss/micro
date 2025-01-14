@@ -10,14 +10,6 @@ static bool trigger_eoc_interrupt = false;
 static void adc_result_callback(void);
 static void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result));
 
-void adc_init(bool trigger_eoc_interrupt_)
-{
-    adc_init_common(trigger_eoc_interrupt_, NULL);
-
-    // Enable the ADC
-    ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
-}
-
 void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uint16_t result)) {
     adc_init_common(true, on_adc_conversion_complete_);
 
@@ -98,25 +90,13 @@ void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_compl
     // Highest sampling time for the most accurate conversion...
     // 000 for 3 cpu cycles
     // 100 for 84 cpu cycles
+    // 111 for 480 cpu cycles
     ADC1->SMPR1 &= ~ADC_SMPR1_SMP14; // (clears the SMP14 bits)
     ADC1->SMPR1 |= 0b100 << ADC_SMPR1_SMP14_Pos;
-    // ADC1->SMPR1 &= ~ADC_SMPR1_SMP14; // (clears the SMP14 bits)
-    // 111 for 480 cpu cycles
-    // ADC1->SMPR1 |= 0b111 << ADC_SMPR1_SMP14_Pos;
 
     // Set the number of conversions to 1
     ADC1->SQR1 &= ~ADC_SQR1_L; // 0000 for 1 conversion
     // Set the 1st conversion channel n.o. to ADC_CHANNEL
     ADC1->SQR3 = ADC_CHANNEL; // this fills the smallest 4 bits,
     // which map exactly to the 1st conversion channel register 
-
-    // ---- ADC Config schema ----
-    // ADC->CCR = ...; // for setting adc clock prescaler
-    // ADC1->CR1 = ...; // i.a. resolution (6, 8, 10, 12 bits)
-    // ADC1->CR2 = ...;
-    // ADC1->SMPR1 = ...; // no. of cycles per each 10-18 channel's conversion 
-    // ADC1->SMPR2 = ...; // no. of cycles per each 0-9 channel's conversion
-    // ADC1->SQR1 = ...; // i.a. no. of conversions
-    // ADC1->SQR2 = 0; // result ALIGN
-    // ADC1->SQR3 = 4U; /* on channel 4 */
 }

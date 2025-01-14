@@ -1,6 +1,5 @@
 #pragma once
 #include <stdint.h>
-#include <string.h>
 #include <stdbool.h>
 
 #define BUFF_SIZE 4096

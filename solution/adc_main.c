@@ -1,8 +1,9 @@
-#include "common.h"
+#include <delay.h>
+#include <gpio.h>
+#include <stm32.h>
 #include "adc.h"
 #include "usart.h"
 #include "timer.h"
-#include "user_button.h"
 #include "led.h"
 
 // Things to make sure of:
@@ -12,10 +13,40 @@
 
 // Helper functions
 static int int_to_string(int n, char *str, int len);
+static void set_cpu_clock_96MHz(void);
 
-// Callbacks
+// ADC conversion complete callback
 static void on_adc_conversion_complete(uint16_t result) {
+    // TODO: convert to signed and compress A-law (precompute 4096 values)
     usart_send_byte((uint8_t)result);
+}
+
+static void init(void) {
+    set_cpu_clock_96MHz();
+    led_green_init(); 
+    led_green_on();
+    usart_init(USART_BAUDRATE, PCLK_HZ); // TODO: ADC 8bit -> 12bit
+    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
+
+    // Display sampling info.
+    const int timer_clock = 96000000;
+    int psc = 3000-1, arr = 4-1; 
+    int freq = timer_clock / (psc + 1) / (arr + 1);
+    char num[16]; int_to_string(freq, num, sizeof(num));
+    usart_send_string("\n\rSampling at ");
+    usart_send_string(num);
+    usart_send_string("Hz\n\r");
+    Delay(12800000);
+
+    timer_init_with_pin_output_on_update_event(psc, arr);
+}
+
+int main() {
+    init();
+
+    while (true) {
+        __NOP();
+    }
 }
 
 static void set_cpu_clock_96MHz(void) {
@@ -84,34 +115,6 @@ static void set_cpu_clock_96MHz(void) {
     RCC->CFGR = reg;
 
     while(!((RCC->CFGR & RCC_CFGR_SWS) == RCC_CFGR_SWS_PLL)) {}
-}
-
-static void init(void) {
-    set_cpu_clock_96MHz();
-    led_green_init(); 
-    led_green_on();
-    usart_init(USART_BAUDRATE, PCLK_HZ); // USART will use DMA    
-    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
-
-    // Display sampling info.
-    const int timer_clock = 96000000;
-    int psc = 3000-1, arr = 4-1; 
-    int freq = timer_clock / (psc + 1) / (arr + 1);
-    char num[16]; int_to_string(freq, num, sizeof(num));
-    usart_send_string("\n\rSampling at ");
-    usart_send_string(num);
-    usart_send_string("Hz\n\r");
-    Delay(12800000);
-
-    timer_init_with_pin_output_on_update_event(psc, arr);
-}
-
-int main() {
-    init();
-
-    while (true) {
-        __NOP();
-    }
 }
 
 int int_to_string(int n, char *buff, int len) {

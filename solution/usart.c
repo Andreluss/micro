@@ -1,9 +1,9 @@
 #include "usart.h"
 #include "buffer.h"
 
-static Buffer dma_bout[2];
+static Buffer _dma_bout[2];
 static int _current_buffer_idx = 0;
-static Buffer* active_buffer() { return &dma_bout[_current_buffer_idx]; }
+static Buffer* active_buffer() { return &_dma_bout[_current_buffer_idx]; }
 static void switch_buffer() { _current_buffer_idx ^= 1; Buffer_clear(active_buffer()); }
 
 static void usart_dma_init(void) {
@@ -32,8 +32,8 @@ static void usart_dma_init(void) {
     NVIC_EnableIRQ(DMA1_Stream6_IRQn);
     NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
-    Buffer_init(&dma_bout[0]);
-    Buffer_init(&dma_bout[1]);
+    Buffer_init(&_dma_bout[0]);
+    Buffer_init(&_dma_bout[1]);
 }
 
 void usart_init(int baudrate, int pclk1_hz)
@@ -79,11 +79,10 @@ static void dma_send_buffer(Buffer* buffer) {
     dma_init_transfer(dma_bytes, dma_bout_bytes_to_send);
 }
 
-// Interrupt: DMA finished send
 void DMA1_Stream6_IRQHandler(void) {
     uint32_t isr = DMA1->HISR;
 
-    // Transfer Complete Interrupt Flag on stream 6
+    // Transfer Completed Interrupt Flag stream 6
     if (isr & DMA_HISR_TCIF6) {
         DMA1->HIFCR = DMA_HIFCR_CTCIF6; // Clear TCIF 
         
@@ -94,7 +93,7 @@ void DMA1_Stream6_IRQHandler(void) {
     }
 }
 
-int usart_send_bytes(uint8_t *bytes, int length)
+static int usart_send_bytes(uint8_t *bytes, int length)
 {
     int result = Buffer_push_bytes(active_buffer(), bytes, length);
     
