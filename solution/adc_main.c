@@ -19,7 +19,7 @@ static void on_adc_conversion_complete(uint16_t result) {
     if (USE_ALAW) {
         scaled_result = ALaw[result]; //12bit -> a-law 8bit 
     } else if (ADC_MODE == ADC_MODE_12BIT) {
-        scaled_result = result / 16;
+        scaled_result = result >> 4;
     } else {
         scaled_result = result;
     }
