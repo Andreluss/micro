@@ -9,11 +9,24 @@
 #define PCLK_HZ 48000000
 #define USART_BAUDRATE 115200
 
+const bool USE_ALAW = true;
+const enum ADC_Mode ADC_MODE = ADC_MODE_12BIT;
+const bool SIGNED = false;
+
 static void on_adc_conversion_complete(uint16_t result) {
-    uint8_t scaled_result = ALaw[result]; //12bit -> a-law 8bit
-    // uint8_t scaled_result = result >> 4;
-    // uint8_t scaled_result = result;
-    usart_send_byte((uint8_t)scaled_result);
+    uint16_t scaled_result;
+    if (USE_ALAW) {
+        scaled_result = ALaw[result]; //12bit -> a-law 8bit 
+    } else if (ADC_MODE == ADC_MODE_12BIT) {
+        scaled_result = result / 16;
+    } else {
+        scaled_result = result;
+    }
+
+    if (SIGNED) {
+        scaled_result ^= 0x80; // unsigned -> signed
+    }
+    usart_send_byte(scaled_result);
 }
 
 static void set_cpu_clock_96MHz(void);
@@ -21,7 +34,7 @@ static void set_cpu_clock_96MHz(void);
 static void init(void) {
     set_cpu_clock_96MHz();
     usart_init(USART_BAUDRATE, PCLK_HZ);
-    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
+    adc_init_with_external_trigger_tim2(on_adc_conversion_complete, ADC_MODE);
 
     int psc = 3000-1, arr = 4-1; 
     timer_init_with_pin_output_on_update_event(psc, arr);
