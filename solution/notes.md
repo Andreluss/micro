@@ -34,6 +34,12 @@ f_PCLK1 = 16Mhz on startup
 
 f_CK_CNTx = f_CK_TIMx / (TIMx->PSC + 1) 
 
+----- audio -------
+play -t raw -r 8k -e signed -b 8 -c 1 audio.raw
+play -t raw -r 8k -e unsigned -b 8 -c 1 audio.raw
+
+play -r 8k -e a-law -c 1 5.al
+play -r 8k -e unsigned -b 8 -c 1 5.raw
 
 ----- setup 100mhz cpu ----
 Ustawiamy fSYSCLK = fPLL OUT

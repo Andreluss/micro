@@ -19,7 +19,6 @@ void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uin
     // Set the external trigger polarity to rising edge
     ADC1->CR2 &= ~ADC_CR2_EXTEN_Msk;
     ADC1->CR2 |= ADC_CR2_EXTEN_0; // EXTEN: 01 -> rising edge 
-    // TODO: check, maybe falling should be (also) used
 
     // Enable the ADC
     ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC

@@ -5,6 +5,7 @@
 #include "usart.h"
 #include "timer.h"
 #include "led.h"
+#include "alaw.h"
 
 // Things to make sure of:
 #define SYS_CLK 96000000
@@ -18,7 +19,15 @@ static void set_cpu_clock_96MHz(void);
 // ADC conversion complete callback
 static void on_adc_conversion_complete(uint16_t result) {
     // TODO: convert to signed and compress A-law (precompute 4096 values)
-    usart_send_byte((uint8_t)result);
+    // uint8_t linear_scaled_result = (result >> 4) - 128;
+    if (result > 4095) {
+        led_green_off();
+    }
+    uint8_t scaled_result = ALaw[result];
+    // uint8_t scaled_result = result >> 4;
+    // uint8_t scaled_result = result;
+
+    usart_send_byte((uint8_t)scaled_result);
 }
 
 static void init(void) {
