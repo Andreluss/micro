@@ -47,7 +47,7 @@ int main() {
         __NOP();
     }
 }
-
+ 
 static void set_cpu_clock_96MHz(void) {
     RCC->CR &= ~(RCC_CR_PLLI2SON | RCC_CR_PLLON |
                 RCC_CR_HSEBYP | RCC_CR_HSEON);

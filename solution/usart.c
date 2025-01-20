@@ -1,3 +1,6 @@
+#include <stm32.h>
+#include <gpio.h>
+#include <string.h>
 #include "usart.h"
 #include "buffer.h"
 
