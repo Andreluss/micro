@@ -1,4 +1,8 @@
 #include "adc.h"
+#include <stdbool.h>
+#include <stm32.h>
+#include <stddef.h>
+#include <gpio.h>
 
 static void (*on_adc_conversion_complete)(uint16_t) = NULL;
 static bool trigger_eoc_interrupt = false;

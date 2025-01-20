@@ -1,4 +1,5 @@
 #include "timer.h"
+#include <stm32.h>
 
 static void (*timer_on_tick)(void);
 

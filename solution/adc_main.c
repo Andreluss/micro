@@ -1,5 +1,6 @@
 #include <gpio.h>
 #include <stm32.h>
+#include <stdbool.h>
 #include "adc.h"
 #include "usart.h"
 #include "alaw.h"
