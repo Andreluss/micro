@@ -7,11 +7,11 @@ static bool trigger_eoc_interrupt = false;
 #define ADC_PIN 4
 #define ADC_CHANNEL 14
 
-static void adc_result_callback(void);
-static void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result));
+static void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result), enum ADC_Mode mode);
 
-void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uint16_t result)) {
-    adc_init_common(true, on_adc_conversion_complete_);
+void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uint16_t result), enum ADC_Mode mode) 
+{
+    adc_init_common(true, on_adc_conversion_complete_, mode);
 
     // Set the external trigger to TIM2 
     ADC1->CR2 &= ~ADC_CR2_EXTSEL_Msk;
@@ -24,39 +24,18 @@ void adc_init_with_external_trigger_tim2(void (*on_adc_conversion_complete_)(uin
     ADC1->CR2 |= ADC_CR2_ADON; // Turn on the ADC
 }
 
-void adc_trigger_single_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
-{
-    on_adc_conversion_complete = on_adc_conversion_complete_;
-
-    // Start the conversion
-    ADC1->CR2 |= ADC_CR2_SWSTART;
-
-    if (!trigger_eoc_interrupt) {
-        // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
-        while (!(ADC1->SR & ADC_SR_EOC)) {}
-
-        adc_result_callback();
-    }
-}
-
 void ADC_IRQHandler(void)
 {
     if (ADC1->SR & ADC_SR_EOC) {
-        adc_result_callback();
+        uint16_t result = ADC1->DR;
+
+        if (on_adc_conversion_complete) {
+            on_adc_conversion_complete(result);
+        }
     }
 }
 
-static void adc_result_callback(void) {
-    // Read the converted data
-    uint16_t result = ADC1->DR;  // Get the converted value from the Data Register (DR)
-
-    // Callback
-    if (on_adc_conversion_complete) {
-        on_adc_conversion_complete(result);
-    }
-}
-
-void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result))
+void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_complete_)(uint16_t result), enum ADC_Mode mode)
 {
     trigger_eoc_interrupt = trigger_eoc_interrupt_;
     on_adc_conversion_complete = on_adc_conversion_complete_;
@@ -69,15 +48,14 @@ void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_compl
     RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
     // Configure GPIO pin 4 as an analog input
     GPIOainConfigure(GPIOC, ADC_PIN);
-
-    // Configure the ADC
     
-    // Set the resolution to 12 bits
-    // 8bit
-    ADC1->CR1 |= ADC_CR1_RES_1;
-    ADC1->CR1 &= ~ADC_CR1_RES_0;
-    // 12bit 
-    // ADC1->CR1 &= ~ADC_CR1_RES;
+    // Set the ADC resolution 
+    if (mode == ADC_MODE_8BIT) {
+        ADC1->CR1 |= ADC_CR1_RES_1;
+        ADC1->CR1 &= ~ADC_CR1_RES_0;
+    } else if (mode == ADC_MODE_12BIT) {
+        ADC1->CR1 &= ~ADC_CR1_RES;
+    }
 
     if (trigger_eoc_interrupt) {
         // Enable the End of Conversion interrupt
