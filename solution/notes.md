@@ -98,3 +98,70 @@ w4_clocks.pdf / 23
     - przerwania mozliwosci zapisu od DMA/UART wyciagaja elementy z kolejki i przesylaja na komputer
 - kodowanie A-law na komputerze i zapis do pliku 
 - zapisywanie sygnalu w raw
+
+
+-------------------------- backup ----------------------------
+static void init(void) {
+    set_cpu_clock_96MHz();
+    led_green_init(); 
+    led_green_on();
+    usart_init(USART_BAUDRATE, PCLK_HZ);
+    adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
+
+    // Display sampling info.
+    int psc = 3000-1, arr = 4-1; 
+    
+    const int timer_clock = 96000000;
+    int freq = timer_clock / (psc + 1) / (arr + 1);
+    char num[16]; int_to_string(freq, num, sizeof(num));
+    usart_send_string("\n\rSampling at ");
+    usart_send_string(num);
+    usart_send_string("Hz\n\r");
+    Delay(12800000);
+
+    timer_init_with_pin_output_on_update_event(psc, arr);
+}
+int int_to_string(int n, char *buff, int len) {
+    buff[len - 1] = 0;
+    int pos = len - 2;
+    if (n == 0) {
+        buff[pos--] = '0';
+    } else {
+        while (n && pos >= 0) {
+            buff[pos--] = '0' + (n % 10);
+            n /= 10;
+        }
+    }
+
+    if (n != 0) {
+        return -1;
+    }
+
+    // shift the string to the beginning
+    int shift = pos + 1;
+    for (int i = 0; i < len; i++) {
+        if (i + shift < len) {
+            buff[i] = buff[i + shift];
+        } else {
+            buff[i] = 0;
+        }
+    }
+
+    return 0;
+}
+
+
+void adc_trigger_single_conversion(void (*on_adc_conversion_complete_)(uint16_t result)/*, int conversion_id*/)
+{
+    on_adc_conversion_complete = on_adc_conversion_complete_;
+
+    // Start the conversion
+    ADC1->CR2 |= ADC_CR2_SWSTART;
+
+    if (!trigger_eoc_interrupt) {
+        // Wait for the conversion to complete (non-DMA mode) TODO: use DMA?
+        while (!(ADC1->SR & ADC_SR_EOC)) {}
+
+        adc_result_callback();
+    }
+}

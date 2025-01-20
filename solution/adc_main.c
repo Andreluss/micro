@@ -1,52 +1,29 @@
-#include <delay.h>
 #include <gpio.h>
 #include <stm32.h>
 #include "adc.h"
 #include "usart.h"
-#include "timer.h"
-#include "led.h"
 #include "alaw.h"
+#include "timer.h"
 
-// Things to make sure of:
 #define SYS_CLK 96000000
 #define PCLK_HZ 48000000
 #define USART_BAUDRATE 115200
 
-// Helper functions
-static int int_to_string(int n, char *str, int len);
-static void set_cpu_clock_96MHz(void);
-
-// ADC conversion complete callback
 static void on_adc_conversion_complete(uint16_t result) {
-    // TODO: convert to signed and compress A-law (precompute 4096 values)
-    // uint8_t linear_scaled_result = (result >> 4) - 128;
-    if (result > 4095) {
-        led_green_off();
-    }
-    uint8_t scaled_result = ALaw[result];
+    uint8_t scaled_result = ALaw[result]; //12bit -> a-law 8bit
     // uint8_t scaled_result = result >> 4;
     // uint8_t scaled_result = result;
-
     usart_send_byte((uint8_t)scaled_result);
 }
 
+static void set_cpu_clock_96MHz(void);
+
 static void init(void) {
     set_cpu_clock_96MHz();
-    led_green_init(); 
-    led_green_on();
-    usart_init(USART_BAUDRATE, PCLK_HZ); // TODO: ADC 8bit -> 12bit
+    usart_init(USART_BAUDRATE, PCLK_HZ);
     adc_init_with_external_trigger_tim2(on_adc_conversion_complete);
 
-    // Display sampling info.
-    const int timer_clock = 96000000;
     int psc = 3000-1, arr = 4-1; 
-    int freq = timer_clock / (psc + 1) / (arr + 1);
-    char num[16]; int_to_string(freq, num, sizeof(num));
-    usart_send_string("\n\rSampling at ");
-    usart_send_string(num);
-    usart_send_string("Hz\n\r");
-    Delay(12800000);
-
     timer_init_with_pin_output_on_update_event(psc, arr);
 }
 
@@ -124,33 +101,4 @@ static void set_cpu_clock_96MHz(void) {
     RCC->CFGR = reg;
 
     while(!((RCC->CFGR & RCC_CFGR_SWS) == RCC_CFGR_SWS_PLL)) {}
-}
-
-int int_to_string(int n, char *buff, int len) {
-    buff[len - 1] = 0;
-    int pos = len - 2;
-    if (n == 0) {
-        buff[pos--] = '0';
-    } else {
-        while (n && pos >= 0) {
-            buff[pos--] = '0' + (n % 10);
-            n /= 10;
-        }
-    }
-
-    if (n != 0) {
-        return -1;
-    }
-
-    // shift the string to the beginning
-    int shift = pos + 1;
-    for (int i = 0; i < len; i++) {
-        if (i + shift < len) {
-            buff[i] = buff[i + shift];
-        } else {
-            buff[i] = 0;
-        }
-    }
-
-    return 0;
 }
