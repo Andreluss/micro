@@ -46,9 +46,3 @@ void Buffer_get_segment(Buffer* b, char** buff_p, int* count_p) {
     *buff_p = b->buff + b->first;
     *count_p = min(b->count, BUFF_SIZE - b->first);
 }
-void Buffer_pop(Buffer* b, int count) {
-    if (count <= 0) return;
-    count = min(count, b->count);
-    b->first = (b->first + count) % BUFF_SIZE;
-    b->count -= count;
-}

@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include <stdint.h>
 
 enum ADC_Mode {
     ADC_MODE_8BIT = 0,

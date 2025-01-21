@@ -1,4 +1,8 @@
 #include "adc.h"
+#include <stdbool.h>
+#include <stm32.h>
+#include <stddef.h>
+#include <gpio.h>
 
 static void (*on_adc_conversion_complete)(uint16_t) = NULL;
 static bool trigger_eoc_interrupt = false;
@@ -76,4 +80,7 @@ void adc_init_common(bool trigger_eoc_interrupt_, void (*on_adc_conversion_compl
     // Set the 1st conversion channel n.o. to ADC_CHANNEL
     ADC1->SQR3 = ADC_CHANNEL; // this fills the smallest 4 bits,
     // which map exactly to the 1st conversion channel register 
+
+    ADC1->CR2 &= ~ADC_CR2_ALIGN; // left align the 12bit data
+    // ADC1->CR2 |= ADC_CR2_ALIGN; // right align the 12bit data
 }

@@ -1,5 +1,6 @@
 #include <gpio.h>
 #include <stm32.h>
+#include <stdbool.h>
 #include "adc.h"
 #include "usart.h"
 #include "alaw.h"
@@ -18,7 +19,7 @@ static void on_adc_conversion_complete(uint16_t result) {
     if (USE_ALAW) {
         scaled_result = ALaw[result]; //12bit -> a-law 8bit 
     } else if (ADC_MODE == ADC_MODE_12BIT) {
-        scaled_result = result / 16;
+        scaled_result = result >> 4;
     } else {
         scaled_result = result;
     }
@@ -47,7 +48,7 @@ int main() {
         __NOP();
     }
 }
-
+ 
 static void set_cpu_clock_96MHz(void) {
     RCC->CR &= ~(RCC_CR_PLLI2SON | RCC_CR_PLLON |
                 RCC_CR_HSEBYP | RCC_CR_HSEON);

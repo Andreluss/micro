@@ -1,4 +1,6 @@
 #include "led.h"
+#include <stm32.h>
+#include <gpio.h>
 
 #define GREEN_LED_GPIO GPIOA
 #define GREEN_LED_PIN 7
