@@ -14,13 +14,12 @@ def unsigned12bit_to_alaw(v12bit):
     else:
         return sign_x * (1 + log(A * abs(x))) / (1 + log(A))
 
-
 f = [0] * 4096
 f_byte = [0] * 4096
 for x in range(0, 4096):
     f[x] = unsigned12bit_to_alaw(x)
     f_byte[x] = round((f[x] + 1.0) / 2.0 * 255.0)
-    print(f[x], f_byte[x], adc_to_alaw(x))
+    print(f[x], f_byte[x])
     
 # save f[x] to alaw.h file 
 with open("alaw.h", "w") as f:

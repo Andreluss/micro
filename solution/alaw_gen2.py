@@ -61,7 +61,7 @@ def generate_c_array_for_12bit_unsigned():
 c_array = generate_c_array_for_12bit_unsigned()
 
 # Format the array into a C-style static array
-c_code = "const uint8_t alaw_12bit_table[4096] = {\n"
+c_code = "const uint8_t ALaw[4096] = {\n"
 for i, val in enumerate(c_array):
     c_code += f"0x{val:02X}, "
     if (i + 1) % 16 == 0:  # Line break every 16 values for readability
@@ -69,7 +69,7 @@ for i, val in enumerate(c_array):
 c_code = c_code.strip(", \n") + "\n};"
 
 # Save the C array to a file
-with open("alaw_12bit_table.c", "w") as f:
+with open("alaw.h", "w") as f:
     f.write(c_code)
 
 c_code
