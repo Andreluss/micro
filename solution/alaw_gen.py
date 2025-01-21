@@ -1,35 +1,3 @@
-def linear_to_alaw(pcm_val):
-    """Convert a 16-bit linear PCM value to 8-bit A-Law."""
-    # Get absolute value of the PCM
-    abs_val = abs(pcm_val)
-    
-    # Clamp the value to the maximum range
-    if abs_val > 32635:
-        abs_val = 32635
-
-    # Apply A-Law compression
-    if abs_val >= 256:
-        exponent = (abs_val.bit_length() - 8)  # Get the exponent (position of highest bit)
-        mantissa = (abs_val >> (exponent + 3)) & 0x0F  # Get 4 bits of mantissa
-        alaw_val = (exponent << 4) | mantissa  # Combine exponent and mantissa
-    else:
-        alaw_val = abs_val >> 4  # For values < 256, use 4 most significant bits
-
-    # Invert bits and add the sign bit
-    alaw_val ^= 0x55  # XOR with 0x55
-    if pcm_val < 0:
-        alaw_val |= 0x80  # Add the sign bit for negative values
-
-    return alaw_val
-
-def adc_to_alaw(adc_val):
-    """Convert a 12-bit ADC value (0...4095) to A-Law encoded byte."""
-    # Scale 12-bit ADC value to 16-bit signed PCM range (-32768 to 32767)
-    pcm_val = int((adc_val - 2048) / 2048 * 32767)
-
-    # Convert to A-Law
-    return linear_to_alaw(pcm_val)
-
 from math import log
 def unsigned12bit_to_alaw(v12bit): 
     assert 0 <= v12bit <= 0xFFF
